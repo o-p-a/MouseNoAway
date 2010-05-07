@@ -14,6 +14,7 @@
 Auto-Execute:
 	SetWorkingDir, %A_ScriptDir%
 	Menu, Tray, Icon, , , 1
+	Menu, Tray, Tip, MouseNoAway
 	OnExit, Exit-Execute
 	InstallWindowsHook("", "LowLevelMouseProc")
 	exit
@@ -29,6 +30,7 @@ LowLevelMouseProc(nCode, wParam, lParam)
 	static lasta := 0
 	static lastx2 := 0
 	static lasty2 := 0
+	static discard_count := 0
 
 	Critical
 	discard := False
@@ -52,7 +54,11 @@ LowLevelMouseProc(nCode, wParam, lParam)
 		lastx2 := x
 		lasty2 := y
 
-		if(a2 > 200 && g > 50000){	; A, G limit
+		if(a2 > 102400){			; A limit
+			discard_count++
+			discard := True
+		}else if(a2 > 200 && g > 50000){	; A, G limit
+			discard_count++
 			discard := True
 		}else{
 			lastx := x
@@ -63,6 +69,7 @@ LowLevelMouseProc(nCode, wParam, lParam)
 	Critical, Off
 
 	if(discard){
+;		ToolTip, %discard_count%
 		return True
 	}else{
 		return CallNextHookEx(nCode, wParam, lParam)
